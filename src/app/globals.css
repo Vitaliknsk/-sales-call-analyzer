@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 33% 98%;
+    --foreground: 224 71% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 71% 4%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 262 40% 96%;
+    --accent-foreground: 262 83% 30%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262 83% 58%;
+    --radius: 0.85rem;
+  }
+
+  .dark {
+    --background: 224 71% 5%;
+    --foreground: 210 40% 98%;
+    --card: 224 71% 7%;
+    --card-foreground: 210 40% 98%;
+    --primary: 263 85% 65%;
+    --primary-foreground: 224 71% 4%;
+    --secondary: 215 28% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 28% 14%;
+    --muted-foreground: 217 11% 65%;
+    --accent: 263 40% 18%;
+    --accent-foreground: 263 90% 92%;
+    --border: 215 28% 16%;
+    --input: 215 28% 16%;
+    --ring: 263 85% 65%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply rounded-2xl border border-white/20 bg-white/40 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-black/30;
+  }
+
+  .mesh-gradient {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(at 40% 20%, hsla(263, 85%, 65%, 0.22) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(210, 90%, 56%, 0.15) 0px, transparent 45%),
+      radial-gradient(at 0% 80%, hsla(280, 70%, 60%, 0.12) 0px, transparent 50%);
+  }
+
+  .dark .mesh-gradient {
+    background-image:
+      radial-gradient(at 40% 20%, hsla(263, 85%, 45%, 0.35) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(210, 90%, 40%, 0.2) 0px, transparent 45%),
+      radial-gradient(at 0% 80%, hsla(280, 70%, 45%, 0.18) 0px, transparent 50%);
+  }
+}
