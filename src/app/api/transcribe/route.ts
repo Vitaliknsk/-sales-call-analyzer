@@ -26,9 +26,11 @@ export async function POST(req: Request) {
     }
 
     // Скачиваем аудио из Vercel Blob
+    console.log("Attempting to fetch blobUrl:", blobUrl);
     const response = await fetch(blobUrl);
     if (!response.ok) {
-      throw new Error(`Не удалось скачать файл из хранилища: ${response.statusText}`);
+      console.error(`Failed to fetch blob from Vercel. Status: ${response.status}, StatusText: ${response.statusText}, URL: ${blobUrl}`);
+      throw new Error(`Не удалось скачать файл из хранилища: ${response.statusText || response.status}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
