@@ -11,16 +11,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       onBeforeGenerateToken: async () => {
         // Для MVP мы разрешаем загрузку всем, но ограничиваем форматы и размер
         return {
-          allowedContentTypes: [
-            'audio/mpeg',
-            'audio/mp3',
-            'audio/wav',
-            'audio/x-wav',
-            'audio/wave',
-            'audio/x-m4a',
-            'audio/m4a',
-            'audio/mp4',
-          ],
           maximumSizeInBytes: 30 * 1024 * 1024, // 30 MB
         };
       },
