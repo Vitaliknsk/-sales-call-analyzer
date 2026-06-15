@@ -6,9 +6,9 @@ import {
 import { parseAnalysisLlmJson } from "@/lib/parse-analysis-json";
 import type { SalesCallAnalysis } from "@/types/analysis";
 
-const GROQ_MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+const GROQ_MODEL = process.env.GROQ_MODEL ?? "llama-3.1-8b-instant";
 const OPENROUTER_MODEL =
-  process.env.OPENROUTER_MODEL ?? "meta-llama/llama-3.3-70b-instruct";
+  process.env.OPENROUTER_MODEL ?? "meta-llama/llama-3.1-8b-instruct";
 
 async function callGroq(
   transcript: string,
