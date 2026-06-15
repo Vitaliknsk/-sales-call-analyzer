@@ -8,7 +8,7 @@ import type { SalesCallAnalysis } from "@/types/analysis";
 
 const GROQ_MODEL = process.env.GROQ_MODEL ?? "llama-3.1-8b-instant";
 const OPENROUTER_MODEL =
-  process.env.OPENROUTER_MODEL ?? "meta-llama/llama-3.1-8b-instruct";
+  process.env.OPENROUTER_MODEL ?? "google/gemini-2.5-flash";
 
 async function callGroq(
   transcript: string,
@@ -83,7 +83,7 @@ async function callOpenRouter(
 }
 
 /**
- * Выбирает провайдера: приоритет Groq, иначе OpenRouter.
+ * Выбирает провайдера: приоритет OpenRouter (из-за лимитов Groq), иначе Groq.
  */
 export async function runSalesLlmAnalysis(
   transcript: string,
@@ -98,9 +98,9 @@ export async function runSalesLlmAnalysis(
     );
   }
 
-  const raw = useGroq
-    ? await callGroq(transcript, script)
-    : await callOpenRouter(transcript, script);
+  const raw = useOpenRouter
+    ? await callOpenRouter(transcript, script)
+    : await callGroq(transcript, script);
 
   return parseAnalysisLlmJson(raw, transcript);
 }
