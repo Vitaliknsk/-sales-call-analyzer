@@ -12,6 +12,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         // Для MVP мы разрешаем загрузку всем, но ограничиваем форматы и размер
         return {
           maximumSizeInBytes: 30 * 1024 * 1024, // 30 MB
+          addRandomSuffix: true,
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
