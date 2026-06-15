@@ -24,17 +24,57 @@ function extractJsonObject(text: string): string {
   return text.slice(start);
 }
 
+function cleanJsonString(rawJson: string): string {
+  let cleaned = rawJson;
+  
+  // 1. Удаляем однострочные комментарии вида // ..., которые не являются частью URL
+  // Ищем //, перед которым нет двоеточия (чтобы не задеть http:// или https://)
+  cleaned = cleaned.replace(/(?<!:)\/\/.*$/gm, "");
+
+  // 2. Исправляем многострочные строковые литералы в JSON.
+  // Ищем переносы строк внутри кавычек и заменяем их на \n.
+  // Это делается проходом по символам с отслеживанием открытых кавычек.
+  let result = "";
+  let inString = false;
+  let escape = false;
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i];
+    if (char === '"' && !escape) {
+      inString = !inString;
+      result += char;
+    } else if (char === '\\' && inString) {
+      escape = !escape;
+      result += char;
+    } else {
+      escape = false;
+      if (inString && (char === '\n' || char === '\r')) {
+        result += '\\n';
+      } else {
+        result += char;
+      }
+    }
+  }
+
+  return result;
+}
+
 export function parseAnalysisLlmJson(
   content: string,
   serverTranscript: string
 ): SalesCallAnalysis {
-  const cleaned = stripCodeFences(content);
-  const jsonSlice = extractJsonObject(cleaned);
+  const cleanedFences = stripCodeFences(content);
+  const jsonSlice = extractJsonObject(cleanedFences);
+  const sanitized = cleanJsonString(jsonSlice);
+  
   let parsed: unknown;
   try {
-    parsed = JSON.parse(jsonSlice);
-  } catch {
-    throw new Error("Модель вернула невалидный JSON");
+    parsed = JSON.parse(sanitized);
+  } catch (err) {
+    console.error("Failed to parse JSON content from model. Original content:", content);
+    console.error("Sanitized version:", sanitized);
+    console.error("Parsing error:", err);
+    throw new Error(`Модель вернула невалидный JSON: ${err instanceof Error ? err.message : "синтаксическая ошибка"}`);
   }
   const data = analysisResponseSchema.parse(parsed);
   return {
