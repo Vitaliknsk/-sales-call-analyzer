@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import type { SalesCallAnalysis } from "@/types/analysis";
+import { upload } from "@vercel/blob/client";
 
 export type LoadingPhase = 0 | 1 | 2 | 3;
 
@@ -22,16 +23,22 @@ export function useCallAnalysis() {
     setResult(null);
     setPhase(0);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-
       setPhase(0);
-      await new Promise((r) => setTimeout(r, 280));
+      
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      });
 
       setPhase(1);
       const tr = await fetch("/api/transcribe", {
         method: "POST",
-        body: fd,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blobUrl: newBlob.url,
+          filename: file.name,
+          mimeType: file.type,
+        }),
       });
       const trJson = (await tr.json()) as { transcript?: string; error?: string };
       if (!tr.ok) {
