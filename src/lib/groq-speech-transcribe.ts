@@ -1,4 +1,4 @@
-import Groq from "groq-sdk";
+import { createClient } from "@deepgram/sdk";
 
 const ALLOWED_AUDIO = new Set([
   "audio/mpeg",
@@ -11,8 +11,8 @@ const ALLOWED_AUDIO = new Set([
   "audio/mp4",
 ]);
 
-/** Модель Groq Speech-to-Text (по умолчанию whisper-large-v3). */
-export const GROQ_STT_MODEL_DEFAULT = "whisper-large-v3";
+/** Модель Deepgram STT (по умолчанию nova-3). */
+export const GROQ_STT_MODEL_DEFAULT = "nova-3";
 
 function normalizeMime(type: string): string {
   const t = type.split(";")[0]?.trim().toLowerCase() ?? "";
@@ -48,17 +48,17 @@ export function normalizeTranscriptText(raw: string): string {
 }
 
 /**
- * Транскрибация через Groq Speech-to-Text API (быстро, русский, mp3/wav/m4a).
+ * Транскрибация через Deepgram Speech-to-Text API (быстро, русский, mp3/wav/m4a).
  */
 export async function transcribeWithGroqSpeechToText(params: {
   buffer: Buffer;
   filename: string;
   mimeType: string;
 }): Promise<string> {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.DEEPGRAM_API_KEY;
   if (!apiKey?.trim()) {
     throw new Error(
-      "Не задан GROQ_API_KEY для транскрибации (Groq Speech-to-Text)"
+      "Не задан DEEPGRAM_API_KEY для транскрибации (Deepgram Speech-to-Text)"
     );
   }
 
@@ -73,25 +73,30 @@ export async function transcribeWithGroqSpeechToText(params: {
   assertAudioMime(effectiveMime);
 
   const model =
-    process.env.GROQ_TRANSCRIPTION_MODEL?.trim() || GROQ_STT_MODEL_DEFAULT;
+    process.env.DEEPGRAM_MODEL?.trim() || GROQ_STT_MODEL_DEFAULT;
 
-  const groq = new Groq({ apiKey });
-  const blob = new Blob([new Uint8Array(params.buffer)], {
-    type: effectiveMime,
-  });
-  const file = new File([blob], params.filename, { type: effectiveMime });
+  const deepgram = createClient(apiKey);
 
-  const result = await groq.audio.transcriptions.create({
-    file,
-    model,
-    language: "ru",
-    response_format: "json",
-    temperature: 0,
-  });
+  const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
+    params.buffer,
+    {
+      model,
+      language: "ru",
+      smart_format: true,
+      punctuate: true,
+    }
+  );
 
-  const text = result.text;
+  if (error) {
+    throw new Error(`Deepgram ошибка: ${error.message}`);
+  }
+
+  const text =
+    result?.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? "";
+
   if (!text?.trim()) {
     throw new Error("Транскрипция пуста — проверьте качество аудио");
   }
+
   return normalizeTranscriptText(text);
 }
